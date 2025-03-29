@@ -1,148 +1,157 @@
-# ML Model Deployment with Docker
+# ML Model Deployment with Flask and Docker
 
 ## Overview
-This project demonstrates the deployment of machine learning models using Flask and Docker. It integrates two parts into a single Flask application:
+This project demonstrates the deployment of machine learning models using a Flask API. It integrates two machine learning tasks into a single application:
 
-1. **Classification Model:**
-   - **Model:** A RandomForestClassifier trained on the Iris dataset (expects 4 features).
-   - **Endpoint:**  
-     - **POST /predict/classification:**  
-       - *Single Input Example:*  
-         - **Input:**  
-           ```json
-           { "features": [5.1, 3.5, 1.4, 0.2] }
-           ```
-         - **Response:**  
-           ```json
-           { "prediction": 0, "confidence": 0.97 }
-           ```
-       - *Multiple Inputs Example:*  
-         - **Input:**  
-           ```json
-           { "features": [[5.1, 3.5, 1.4, 0.2], [6.2, 3.4, 5.4, 2.3]] }
-           ```
-         - **Response:**  
-           ```json
-           { "predictions": [0, 2] }
-           ```
-   - **Additional Endpoints:**  
-     - **GET /health:** Returns `{ "status": "ok" }`.  
-     - **GET /dashboard:** Serves the input/output dashboard.
+1. **Classification Model (Iris Dataset):**
+   - **Model:** A RandomForestClassifier trained on the Iris dataset.
+   - **Input Requirement:** Exactly 4 float values per sample.
+   - **Endpoints:**
+     - **GET /predict/classification:** Returns sample predictions (for multiple inputs) without confidence values.
+     - **POST /predict/classification:** Accepts JSON input and returns:
+       - For a single sample: prediction with confidence.
+       - For multiple samples: an array of predictions.
 
-2. **Regression Model:**
-   - **Model:** A RandomForestRegressor trained on a housing dataset (`Housing.csv`) to predict housing prices.
-   - **Endpoint:**  
-     - **POST /predict/regression:**  
-       - **Input Example:**  
-         ```json
-         { "features": [2100, 3, 2, 10, ...] }
-         ```
-       - **Response Example:**  
-         ```json
-         { "prediction": 300000.0, "confidence": 0.95 }
-         ```
-       - *Note:* The number of features must match the regression model's expected input (after any preprocessing).
+2. **Regression Model (Housing Dataset):**
+   - **Model:** A RandomForestRegressor trained on a housing dataset.
+   - **Input Requirement:** Exactly 20 float values per sample.
+   - **Endpoints:**
+     - **GET /predict/regression:** Returns sample predictions (with confidence values).
+     - **POST /predict/regression:** Accepts JSON input and returns:
+       - For a single sample: prediction with confidence.
+       - For multiple samples: arrays of predictions and confidence values.
 
-## Files
-- **train.py:** Trains the classification model (Iris) and saves it as `model.pkl`.
-- **train_regression.py:** Trains the regression model (Housing) and saves it as `reg_model.pkl`.
-- **app.py:** Combined Flask API for both classification and regression predictions, health check, and dashboard.
-- **static/index.html:** Dashboard user interface for input and output.
-- **Dockerfile:** Docker configuration to containerize the application.
-- **requirements.txt:** Lists all dependencies.
-- **README.md:** Project documentation.
-- **Housing.csv:** The housing dataset (place this file in the project directory).
+Other endpoints include:
+- **GET /health:** Returns a simple health status.
+- **GET /dashboard:** Serves a web-based dashboard UI.
 
-## Setup and Running
+## Setup Steps
 
-### 1. Train the Models
-**Classification Model:**
-```bash
-python train.py
-```
-This generates `model.pkl`.
+1. **Clone the Repository:**
+   ```bash
+   git clone <repository_url>
+   cd <repository_directory>
+   ```
 
-**Regression Model:**
-```bash
-python train_regression.py
-```
-This generates `reg_model.pkl`.
+2. **Install Dependencies:** Ensure you have Python installed, then run:
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-### 2. Running the API Locally
-Run the combined Flask API:
-```bash
-python app.py
-```
-The API will be available on port 9000:
-- Health Check: `http://localhost:9000/health`
-- Dashboard: `http://localhost:9000/dashboard`
-- Classification Prediction: POST to `http://localhost:9000/predict/classification`
-- Regression Prediction: POST to `http://localhost:9000/predict/regression`
+3. **Train the Models:**
+   - Classification Model:
+     ```bash
+     python train.py
+     ```
+     This will generate a file named `model.pkl`.
+   - Regression Model:
+     ```bash
+     python train_regression.py
+     ```
+     This will generate a file named `reg_model.pkl`.
 
-### 3. Docker Deployment
-**Build the Docker image:**
-```bash
-docker build -t ml-model .
-```
+4. **Run the Flask API:**
+   ```bash
+   python app.py
+   ```
+   The API will be available at http://localhost:9000.
 
-**Run the Docker container:**
-```bash
-docker run -p 9000:9000 ml-model
-```
+5. **(Optional) Docker Deployment:**
+   - Build the Docker image:
+     ```bash
+     docker build -t ml-model .
+     ```
+   - Run the Docker container:
+     ```bash
+     docker run -p 9000:9000 ml-model
+     ```
 
-## API Examples
+## API Endpoints
 
 ### Health Check
-```bash
-curl http://localhost:9000/health
-```
-**Expected response:**
-```json
-{ "status": "ok" }
-```
+- **Endpoint:** GET /health
+- **Description:** Returns a simple JSON object with the health status.
+- **Sample Request:**
+  ```bash
+  curl http://localhost:9000/health
+  ```
+- **Sample Response:**
+  ```json
+  { "status": "ok" }
+  ```
 
-### Classification Prediction (Single Input)
-```bash
-curl -X POST -H "Content-Type: application/json" \
-     -d '{"features": [5.1, 3.5, 1.4, 0.2]}' \
-     http://localhost:9000/predict/classification
-```
-**Example response:**
-```json
-{ "prediction": 0, "confidence": 0.97 }
-```
+### Classification Prediction
 
-### Classification Prediction (Multiple Inputs)
-```bash
-curl -X POST -H "Content-Type: application/json" \
-     -d '{"features": [[5.1, 3.5, 1.4, 0.2], [6.2, 3.4, 5.4, 2.3]]}' \
-     http://localhost:9000/predict/classification
-```
-**Example response:**
-```json
-{ "predictions": [0, 2] }
-```
+#### Single Input
+- **Endpoint:** POST /predict/classification
+- **Input Example:**
+  ```json
+  { "features": [5.1, 3.5, 1.4, 0.2] }
+  ```
+- **Expected Output Example:**
+  ```json
+  { "prediction": 0, "confidence": 0.97 }
+  ```
+
+#### Multiple Inputs
+- **Endpoint:** POST /predict/classification
+- **Input Example:**
+  ```json
+  {
+    "features": [
+      [5.1, 3.5, 1.4, 0.2],
+      [6.2, 3.4, 5.4, 2.3]
+    ]
+  }
+  ```
+- **Expected Output Example:**
+  ```json
+  { "predictions": [0, 2] }
+  ```
+
+#### GET Request:
+If you send a GET request to `/predict/classification`, it returns sample predictions for multiple inputs (without confidence values).
 
 ### Regression Prediction
-*(Ensure the input has the correct number of features for your regression model.)*
-```bash
-curl -X POST -H "Content-Type: application/json" \
-     -d '{"features": [<your housing model feature values> ]}' \
-     http://localhost:9000/predict/regression
-```
-**Example response:**
-```json
-{ "prediction": 300000.0, "confidence": 0.95 }
-```
 
-## Dashboard Usage
+#### Single Input
+- **Endpoint:** POST /predict/regression
+- **Input Example:**
+  ```json
+  {
+    "features": [7420, 4, 2, 3, 2, 0, 1, 1, 0, 1, 0, 1, 0, 0, 1, 0, 1, 1, 0, 0]
+  }
+  ```
+- **Expected Output Example:**
+  ```json
+  { "prediction": 300000.0, "confidence": 0.95 }
+  ```
 
-Open your browser and navigate to:
+#### Multiple Inputs
+- **Endpoint:** POST /predict/regression
+- **Input Example:**
+  ```json
+  {
+    "features": [
+      [7420, 4, 2, 3, 2, 0, 1, 1, 0, 1, 0, 1, 0, 0, 1, 0, 1, 1, 0, 0],
+      [1500, 2, 1, 20, 1, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 1, 1, 0, 0, 1]
+    ]
+  }
+  ```
+- **Expected Output Example:**
+  ```json
+  {
+    "predictions": [300000.0, 150000.0],
+    "confidences": [0.95, 0.90]
+  }
+  ```
+
+#### GET Request:
+Sending a GET request to `/predict/regression` returns sample predictions with confidence values.
+
+### Dashboard UI
+Open your web browser and navigate to:
 ```
 http://localhost:9000/dashboard
 ```
-
-The dashboard provides:
-- A Health Check button.
-- A section for Classification Prediction (enter exactly 4 numbers).
-- A section for Regression Prediction (enter your housing model's feature values).
+This dashboard provides a user-friendly interface for entering inputs and viewing predictions for both classification and regression models.
