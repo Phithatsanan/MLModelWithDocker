@@ -29,8 +29,8 @@ Other endpoints include:
 
 1. **Clone the Repository:**
    ```bash
-   git clone <repository_url>
-   cd <repository_directory>
+   git clone <https://github.com/Phithatsanan/MLModelWithDocker.git>
+   cd <MLModelWithDocker>
    ```
 
 2. **Install Dependencies:** Ensure you have Python installed, then run:
