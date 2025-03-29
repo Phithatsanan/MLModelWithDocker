@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>ML Model Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Orbitron', sans-serif;
+      background: radial-gradient(circle at top, #1a1a2e 0%, #16213e 100%);
+      color: #e0e0e0;
+      padding: 2rem;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    h1 {
+      font-size: 2.5rem;
+      color: #00ddeb;
+      text-shadow: 0 0 10px #00ddeb;
+      margin-bottom: 2rem;
+      animation: glow 2s infinite alternate;
+    }
+    @keyframes glow {
+      from { text-shadow: 0 0 5px #00ddeb, 0 0 10px #00ddeb; }
+      to { text-shadow: 0 0 10px #00ddeb, 0 0 20px #00ddeb; }
+    }
+    /* 3 columns x 2 rows grid (6 sections) */
+    .container {
+      max-width: 1200px;
+      width: 100%;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(300px, 1fr));
+      gap: 1.5rem;
+    }
+    section {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      padding: 1.5rem;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+    section:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 0 15px rgba(0, 221, 235, 0.3);
+    }
+    h2 {
+      font-size: 1.2rem;
+      color: #00ddeb;
+      margin-bottom: 0.75rem;
+    }
+    p {
+      font-size: 0.85rem;
+      color: #a0a0a0;
+      margin-bottom: 0.75rem;
+      line-height: 1.4;
+    }
+    input, textarea {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.1);
+      color: #e0e0e0;
+      font-size: 0.9rem;
+      margin-bottom: 0.75rem;
+      transition: border-color 0.3s;
+    }
+    input:focus, textarea:focus {
+      outline: none;
+      border-color: #00ddeb;
+      box-shadow: 0 0 5px rgba(0, 221, 235, 0.5);
+    }
+    textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
+    button {
+      background: #00ddeb;
+      color: #1a1a2e;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: background 0.3s, transform 0.1s;
+    }
+    button:hover {
+      background: #00b7c3;
+      transform: scale(1.05);
+    }
+    .test-link {
+      display: inline-block;
+      margin-left: 1rem;
+      color: #00ddeb;
+      text-decoration: none;
+      font-size: 0.85rem;
+      transition: color 0.3s;
+    }
+    .test-link:hover {
+      color: #00b7c3;
+      text-decoration: underline;
+    }
+    .result {
+      margin-top: 1rem;
+      padding: 1rem;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 6px;
+      font-size: 0.9rem;
+      white-space: pre-wrap;
+      border-left: 4px solid #00ddeb;
+      color: #e0e0e0;
+    }
+    .error {
+      color: #ff5555;
+      border-left-color: #ff5555;
+    }
+  </style>
+</head>
+<body>
+  <h1>ML Model Dashboard</h1>
+
+  <div class="container">
+    <!-- (1) Health Check Section -->
+    <section>
+      <h2>Health Check</h2>
+      <p>Verify server status</p>
+      <button id="healthBtn">Check Health</button>
+      <a href="/health" target="_blank" class="test-link">Test /health</a>
+      <div id="healthResult" class="result"></div>
+    </section>
+
+    <!-- (2) Classification: Single Input -->
+    <section>
+      <h2>Single Classification</h2>
+      <p>4 features (e.g., 5.1, 3.5, 1.4, 0.2)</p>
+      <input type="text" 
+             id="classFeaturesInput" 
+             placeholder="5.1, 3.5, 1.4, 0.2">
+      <button id="classPredictBtn">Predict</button>
+      <a href="/predict/classification" target="_blank" class="test-link">Test /predict/classification</a>
+      <div id="classResult" class="result"></div>
+    </section>
+
+    <!-- (3) Classification: Multiple Inputs -->
+    <section>
+      <h2>Multiple Classifications</h2>
+      <p>One sample per line, 4 features each<br>
+      Example:<br>
+      5.1, 3.5, 1.4, 0.2<br>
+      6.2, 3.4, 5.4, 2.3</p>
+      <textarea id="multiClassFeaturesInput" 
+                placeholder="5.1, 3.5, 1.4, 0.2
+6.2, 3.4, 5.4, 2.3"></textarea>
+      <button id="multiClassPredictBtn">Predict</button>
+      <a href="/predict/classification" target="_blank" class="test-link">Test /predict/classification</a>
+      <div id="multiClassResult" class="result"></div>
+    </section>
+
+    <!-- (4) Regression: Single Input -->
+    <section>
+      <h2>Single Regression</h2>
+      <p>20 features (e.g., 7420, 4, 2, 3, 2, 0, 1, 1, 0, 1, 0, 1, 0, 0, 1, 0, 1, 1, 0, 0)</p>
+      <input type="text" 
+             id="regFeaturesInput" 
+             placeholder="7420, 4, 2, 3, 2, 0, 1, 1, 0, 1, 0, 1, 0, 0, 1, 0, 1, 1, 0, 0">
+      <button id="regPredictBtn">Predict</button>
+      <a href="/predict/regression" target="_blank" class="test-link">Test /predict/regression</a>
+      <div id="regResult" class="result"></div>
+    </section>
+
+    <!-- (5) Regression: Multiple Inputs -->
+    <section>
+      <h2>Multiple Regressions</h2>
+      <p>One sample per line, 20 features each<br>
+      Example:<br>
+      7420, 4, 2, 3, 2, 0, 1, 1, 0, 1, 0, 1, 0, 0, 1, 0, 1, 1, 0, 0<br>
+      1500, 2, 1, 20, 1, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 1, 1, 0, 0, 1</p>
+      <textarea id="multiRegFeaturesInput" 
+                placeholder="7420, 4, 2, 3, 2, 0, 1, 1, 0, 1, 0, 1, 0, 0, 1, 0, 1, 1, 0, 0
+1500, 2, 1, 20, 1, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 1, 1, 0, 0, 1"></textarea>
+      <button id="multiRegPredictBtn">Predict</button>
+      <a href="/predict/regression" target="_blank" class="test-link">Test /predict/regression</a>
+      <div id="multiRegResult" class="result"></div>
+    </section>
+
+    <!-- (6) Model Info Section -->
+    <section>
+      <h2>Model Info</h2>
+      <p><strong>Regression model trained and saved as <code>reg_model.pkl</code></strong></p>
+      <p><strong>Feature columns (after one-hot encoding):</strong></p>
+      <pre style="font-size:0.8rem; overflow-x:auto; white-space:pre-wrap;">
+['area', 'bedrooms', 'bathrooms', 'stories', 'parking',
+ 'mainroad_no', 'mainroad_yes', 'guestroom_no', 'guestroom_yes',
+ 'basement_no', 'basement_yes', 'hotwaterheating_no', 'hotwaterheating_yes',
+ 'airconditioning_no', 'airconditioning_yes', 'prefarea_no', 'prefarea_yes',
+ 'furnishingstatus_furnished', 'furnishingstatus_semi-furnished',
+ 'furnishingstatus_unfurnished']
+      </pre>
+      <p><strong>Number of features:</strong> 20</p>
+    </section>
+  </div>
+
+  <script>
+    // Helper function to display results or error messages in the result div
+    function displayResult(elementId, data, isError = false) {
+      const element = document.getElementById(elementId);
+      element.innerText = isError ? data : JSON.stringify(data, null, 2);
+      element.classList.toggle('error', isError);
+    }
+
+    // (1) Health Check
+    document.getElementById("healthBtn").addEventListener("click", function() {
+      fetch('/health')
+        .then(response => response.json())
+        .then(data => displayResult("healthResult", data))
+        .catch(error => displayResult("healthResult", "Error: " + error, true));
+    });
+
+    // (2) Single Classification
+    document.getElementById("classPredictBtn").addEventListener("click", function() {
+      const featuresStr = document.getElementById("classFeaturesInput").value;
+      const features = featuresStr.split(',').map(s => parseFloat(s.trim())).filter(n => !isNaN(n));
+      // Must have exactly 4 features
+      if (features.length !== 4) {
+        displayResult("classResult", "Error: Enter exactly 4 float numbers.", true);
+        return;
+      }
+      const payload = { "features": features };
+      fetch('/predict/classification', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+      .then(response => {
+        if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        return response.json();
+      })
+      .then(data => displayResult("classResult", data))
+      .catch(error => displayResult("classResult", "Error: " + error, true));
+    });
+
+    // (3) Multiple Classifications
+    document.getElementById("multiClassPredictBtn").addEventListener("click", function() {
+      const multiFeaturesStr = document.getElementById("multiClassFeaturesInput").value;
+      const lines = multiFeaturesStr.split('\n').filter(line => line.trim() !== "");
+      const features = lines.map(line =>
+        line.split(',').map(s => parseFloat(s.trim())).filter(n => !isNaN(n))
+      );
+      // Each sample must have exactly 4 features
+      if (features.length === 0 || features.some(f => f.length !== 4)) {
+        displayResult("multiClassResult", "Error: Each sample must have exactly 4 float numbers.", true);
+        return;
+      }
+      const payload = { "features": features };
+      fetch('/predict/classification', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+      .then(response => {
+        if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        return response.json();
+      })
+      .then(data => displayResult("multiClassResult", data))
+      .catch(error => displayResult("multiClassResult", "Error: " + error, true));
+    });
+
+    // (4) Single Regression
+    document.getElementById("regPredictBtn").addEventListener("click", function() {
+      const featuresStr = document.getElementById("regFeaturesInput").value;
+      const features = featuresStr.split(',').map(s => parseFloat(s.trim())).filter(n => !isNaN(n));
+      // Must have exactly 20 features
+      if (features.length !== 20) {
+        displayResult("regResult", "Error: Enter exactly 20 numbers.", true);
+        return;
+      }
+      const payload = { "features": features };
+      fetch('/predict/regression', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+      .then(response => {
+        if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        return response.json();
+      })
+      .then(data => displayResult("regResult", data))
+      .catch(error => displayResult("regResult", "Error: " + error, true));
+    });
+
+    // (5) Multiple Regressions
+    document.getElementById("multiRegPredictBtn").addEventListener("click", function() {
+      const multiFeaturesStr = document.getElementById("multiRegFeaturesInput").value;
+      const lines = multiFeaturesStr.split('\n').filter(line => line.trim() !== "");
+      const features = lines.map(line =>
+        line.split(',').map(s => parseFloat(s.trim())).filter(n => !isNaN(n))
+      );
+      // Each sample must have exactly 20 features
+      if (features.length === 0 || features.some(f => f.length !== 20)) {
+        displayResult("multiRegResult", "Error: Each sample must have exactly 20 numbers.", true);
+        return;
+      }
+      const payload = { "features": features };
+      fetch('/predict/regression', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+      .then(response => {
+        if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        return response.json();
+      })
+      .then(data => displayResult("multiRegResult", data))
+      .catch(error => displayResult("multiRegResult", "Error: " + error, true));
+    });
+  </script>
+</body>
+</html>
