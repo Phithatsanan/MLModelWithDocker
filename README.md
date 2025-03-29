@@ -110,8 +110,7 @@ Other endpoints include:
   ```
 
 #### GET Request:
-If you send a GET request to `/predict/classification`, it returns sample predictions for multiple inputs (without confidence values).
-
+If you send a GET request to `/predict/classification`, it returns sample predictions for multiple inputs.
 ### Regression Prediction
 
 #### Single Input
